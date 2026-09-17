@@ -86,18 +86,12 @@ int	Tile::players_at_level_and_enchating(int lvl) {
 }
 
 void Tile::remove_incantation(Incantation *incantation) {
-	long unsigned int pos = 0;
+	IncantationList &list = incantations[incantation->level];
 
-	for (auto inc : incantations[incantation->level]) {
-		if (&inc == incantation)
-			break ;
-		++pos;
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if (&(*it) == incantation) {
+			list.erase(it);
+			return ;
+		}
 	}
-
-	if (pos == incantations[incantation->level].size())
-		return ;
-
-	auto it = incantations.begin();
-	std::advance(it, pos);
-	incantations.erase(it);
 }
