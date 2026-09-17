@@ -36,7 +36,7 @@ void	TCPServer::inputOutputComms() { //manages network comms with clients throug
 	} else {
 		players = game.get_players_map();
 		for (size_t i = 0; i < pollFds.size(); i++) {
-			if (pollFds[i].revents & POLLIN) { //read event
+			if (pollFds[i].revents & (POLLIN | POLLHUP | POLLERR)) { //read event or peer closed
 				if (pollFds[i].fd == socketFd) { //new connection
 					acceptClient();
 				} else if (pollFds[i].fd == STDIN_FILENO) { //admin input from stdin
