@@ -62,6 +62,7 @@ int	parse_short_flag_arg(t_flag_parser *parser, t_flag *flag, char *short_flags,
             {
                 dprintf(2, "%s: option requires an argument -- '%c'\n", parser->argv[0], flag->short_name);
                 dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+                cleanup_parser(parser);
                 exit(EXIT_FAILURE);
             }
             collect_multiple_args(parser, flag, parser->pos + 1);
@@ -81,6 +82,7 @@ int	parse_short_flag_arg(t_flag_parser *parser, t_flag *flag, char *short_flags,
         {
             dprintf(2, "%s: option requires an argument -- '%c'\n", parser->argv[0], flag->short_name);
             dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+            cleanup_parser(parser);
             exit(EXIT_FAILURE);
         }
         parser->pos++;
@@ -122,12 +124,14 @@ void	parse_long_flag_arg(t_flag_parser *parser, t_flag *flag, char *new_arg)
                 {
                     dprintf(2, "%s: option '--%s' requires an argument\n", parser->argv[0], flag->long_name);
                     dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+                    cleanup_parser(parser);
                     exit(EXIT_FAILURE);
                 }
                 if (flag->short_name)
                 {
                     dprintf(2, "%s: option requires an argument -- '%c'\n", parser->argv[0], flag->short_name);
                     dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+                    cleanup_parser(parser);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -147,12 +151,14 @@ void	parse_long_flag_arg(t_flag_parser *parser, t_flag *flag, char *new_arg)
             {
                 dprintf(2, "%s: option '--%s' requires an argument\n", parser->argv[0], flag->long_name);
                 dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+                cleanup_parser(parser);
                 exit(EXIT_FAILURE);
             }
             if (flag->short_name)
             {
                 dprintf(2, "%s: option requires an argument -- '%c'\n", parser->argv[0], flag->short_name);
                 dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+                cleanup_parser(parser);
                 exit(EXIT_FAILURE);
             }
         }
@@ -161,11 +167,10 @@ void	parse_long_flag_arg(t_flag_parser *parser, t_flag *flag, char *new_arg)
     }
 }
 
-t_flag*	match_long_flag(t_flag_parser *parser, const char *name)
+t_flag*	match_long_flag(t_flag_parser *parser, char *name)
 {
-    char *equal_pos = (char *)strchr(name, '=');
+    char *equal_pos = strchr(name, '=');
     char *arg = NULL;
-    char *name_copy = strdup(name);
 
     if (equal_pos)
     {
@@ -175,15 +180,13 @@ t_flag*	match_long_flag(t_flag_parser *parser, const char *name)
 
     for (size_t i = 0; i < parser->count; i++)
     {
-        if (parser->flags[i].long_name && strcmp(parser->flags[i].long_name, name_copy) == 0)
+        if (parser->flags[i].long_name && strcmp(parser->flags[i].long_name, name) == 0)
         {
             parser->flags[i].present++;
             parse_long_flag_arg(parser, &parser->flags[i], arg);
-            free(name_copy);
             return (&parser->flags[i]);
         }
     }
-    free(name_copy);
     return (NULL);
 }
 
@@ -200,6 +203,7 @@ void	parse(t_flag_parser *parser)
             {
                 dprintf(2, "%s: unrecognized option '--%s'\n", parser->argv[0], name);
                 dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+                cleanup_parser(parser);
                 exit(EXIT_FAILURE);
             }
         }
@@ -213,6 +217,7 @@ void	parse(t_flag_parser *parser)
                 {
                     dprintf(2, "%s: invalid option -- '%c'\n", parser->argv[0], short_flags[i]);
                     dprintf(2, "Try '%s --help' or '%s --usage' for more information.\n", parser->argv[0], parser->argv[0]);
+                    cleanup_parser(parser);
                     exit(EXIT_FAILURE);
                 }
                 if (parse_short_flag_arg(parser, flag, short_flags, i) == NO_ARG)
